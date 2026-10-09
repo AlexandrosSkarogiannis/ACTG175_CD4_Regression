@@ -1,31 +1,55 @@
-# ACTG175_CD4_Regression Πρόβλεψη Ανοσολογικής Απόκρισης σε Ασθενείς με HIV (Κλινική Δοκιμή ACTG 175)
+# ACTG175CD4Regression: Predicting Immune Response in HIV Patients (ACTG 175 Clinical Trial)
 
-Η παρούσα εργασία επικεντρώνεται στην ανάπτυξη, αξιολόγηση και ερμηνεία μοντέλων μηχανικής μάθησης (παλινδρόμησης) για την πρόβλεψη της ανοσολογικής απόκρισης ασθενών με λοίμωξη HIV. Στόχος είναι η πρόβλεψη του αριθμού των κυττάρων CD4 έπειτα από 20 εβδομάδες αντιρετροϊκής θεραπείας (μεταβλητή-στόχος `cd420`). 
+This project focuses on developing, evaluating, and interpreting machine learning regression models to predict the immune response of patients with HIV infection. The objective is to predict the CD4 cell count after 20 weeks of antiretroviral therapy, using `cd420` as the target variable.
 
-## Δεδομένα (Dataset)
-Χρησιμοποιήθηκαν δεδομένα από την τυχαιοποιημένη κλινική δοκιμή ACTG 175 (AIDS Clinical Trials Group Study 175), η οποία περιλαμβάνει 2.139 ενήλικες ασθενείς. Το σύνολο δεδομένων διαθέτει 25 χαρακτηριστικά, συμπεριλαμβανομένων δημογραφικών στοιχείων, ιατρικού ιστορικού, εργαστηριακών μετρήσεων και πληροφοριών θεραπευτικής αγωγής.
+## Dataset
 
-## Προεπεξεργασία & Μεθοδολογία
-Για την αποφυγή διαρροής δεδομένων (data leakage) και τη διασφάλιση της αναπαραγωγιμότητας, δημιουργήθηκε ένα ολοκληρωμένο pipeline προεπεξεργασίας:
-* **Τυποποίηση (Standardization):** Εφαρμογή `StandardScaler` στις συνεχείς μεταβλητές (π.χ. ηλικία, βάρος, αρχικές μετρήσεις κυττάρων).
-* **Κωδικοποίηση (Encoding):** Χρήση `One-Hot Encoding` με `drop='first'` σε κατηγορικές μεταβλητές με περισσότερες από δύο κλάσεις (όπως το είδος θεραπείας `trt`) για την αποφυγή πολυσυγγραμμικότητας.
-* **Επιλογή Χαρακτηριστικών (Feature Selection):** Εφαρμογή της μεθόδου Αναδρομικής Απαλοιφής Χαρακτηριστικών (Recursive Feature Elimination - RFE) για τη μείωση της διαστατικότητας. Επιλέχθηκαν στρατηγικά οι 10 κορυφαίες μεταβλητές, κίνηση που βελτίωσε το Μέσο Απόλυτο Σφάλμα (MAE) και την ερμηνευτική ικανότητα (R²).
+The analysis uses data from the randomized ACTG 175 (AIDS Clinical Trials Group Study 175) clinical trial, which includes 2,139 adult patients.
+The dataset contains 25 features, including demographic information, medical history, laboratory measurements, and treatment-related variables.
 
-##  Μοντελοποίηση & Αξιολόγηση
-Αξιολογήθηκαν 5 baseline αλγόριθμοι μέσω **5-Fold Cross-Validation**:
-1. **Linear Regression**
-2. **Gradient Boosting Regressor**
-3. **Random Forest Regressor**
-4. **K-Nearest Neighbors (KNN)**
-5. **Support Vector Regression (SVR)**
+## Preprocessing and Methodology
 
-Μετά την αρχική αξιολόγηση, πραγματοποιήθηκε **Grid Search** για τη βελτιστοποίηση των υπερπαραμέτρων στα δενδρικά ensemble μοντέλα. 
-* Το **Gradient Boosting** αναδείχθηκε ως το βέλτιστο μοντέλο με MAE = 84.19 (με `learning_rate`=0.05, `max_depth`=3, `n_estimators`=100, `subsample`=0.8), καταφέρνοντας να μοντελοποιήσει επιτυχώς τις μη γραμμικές αλληλεπιδράσεις.
+To prevent data leakage and ensure reproducibility, a comprehensive preprocessing pipeline was developed.
 
-## Ερμηνευσιμότητα (Explainable AI - SHAP)
-Προκειμένου να διασφαλιστεί η διαφάνεια του "black-box" μοντέλου Gradient Boosting για κλινική χρήση, εφαρμόστηκε το πλαίσιο των **SHAP values**.
-* **Ισχυρότεροι Προγνωστικοί Παράγοντες:** Ο αρχικός αριθμός κυττάρων CD4 (`cd40`) κυριαρχεί ως ο σημαντικότερος παράγοντας.
-* **Θετική Επίδραση:** Η λήψη νέας θεραπευτικής αγωγής (`bin_treat`, `cat_trt_1`) συνδέεται ξεκάθαρα με αυξητικές τάσεις στα CD4.
-* **Αρνητική Επίδραση:** Το ιστορικό προηγούμενων θεραπειών (`bin_str2`) και τα υψηλά αρχικά επίπεδα CD8 δρουν ανασταλτικά στην τελική πρόβλεψη.
+*   **Standardization:** `StandardScaler` was applied to continuous variables, such as age, weight, and baseline cell counts.
+*   **Encoding:** `OneHotEncoder` with `drop='first'` was used for categorical variables with more than two categories, such as treatment type (`trt`), to reduce multicollinearity.
+*   **Feature Selection:** Recursive Feature Elimination (RFE) was applied to reduce dimensionality. The top 10 features were strategically selected, improving Mean Absolute Error (MAE) and model interpretability as measured by R².
 
-Η προσέγγιση απέδειξε ότι ο συνδυασμός ισχυρών προγνωστικών αλγορίθμων (Gradient Boosting) με σύγχρονα εργαλεία XAI (SHAP) αποτελεί τη βέλτιστη πρακτική για την υποστήριξη κλινικών αποφάσεων.
+## Modeling and Evaluation
+
+Five baseline regression algorithms were evaluated using 5-fold cross-validation:
+
+1. Linear Regression
+2. Gradient Boosting Regressor
+3. Random Forest Regressor
+4. K-Nearest Neighbors (KNN)
+5. Support Vector Regression (SVR)
+
+Following the initial evaluation, Grid Search was performed to optimize the hyperparameters of the tree-based ensemble models.
+
+## Best-Performing Model
+
+Gradient Boosting emerged as the best-performing model, achieving an MAE of **84.19** with the following hyperparameters:
+
+*   `learning_rate`: 0.05
+*   `max_depth`: 3
+*   `n_estimators`: 100
+*   `subsample`: 0.8
+
+The model successfully captured non-linear relationships and interactions within the data.
+
+## Explainable AI (XAI) with SHAP
+
+To improve the transparency and interpretability of the Gradient Boosting model, particularly in the context of potential clinical applications, SHAP (SHapley Additive exPlanations) was used to explain its predictions.
+
+### Key Predictive Factors
+
+*   **Most Important Predictor:** The baseline CD4 cell count (`cd40`) emerged as the most influential feature in predicting CD4 levels after 20 weeks.
+*   **Positive Influence:** Initiation of a new treatment regimen (`bin_treat`, `cat_trt_1`) was associated with higher predicted CD4 counts.
+*   **Negative Influence:** A history of previous treatments (`bin_str2`) and high baseline CD8 levels were associated with lower predicted values.
+
+## Conclusion
+
+This project demonstrates the potential of combining powerful predictive algorithms, such as Gradient Boosting, with modern Explainable AI techniques like SHAP to improve model transparency and support the interpretation of clinical data.
+
+The findings highlight the importance of baseline CD4 counts and treatment-related factors in predicting immune response. However, these results should be interpreted as predictive associations rather than evidence of causation, and the model requires further clinical validation before being used to support clinical decisions.
